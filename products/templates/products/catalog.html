@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+
+{% block title %}Каталог товаров - Sports Nutrition{% endblock %}
+
+{% block content %}
+<div class="catalog">
+    <div class="catalog__header">
+        <h1 class="catalog__title">Каталог товаров</h1>
+        <div class="catalog__sort">
+            <form action="" method="GET" id="sort-form">
+                {% for key, value in request.GET.items %}
+                    {% if key != 'sort' %}
+                    <input type="hidden" name="{{ key }}" value="{{ value }}">
+                    {% endif %}
+                {% endfor %}
+                <label for="sort">Сортировать по:</label>
+                <select name="sort" id="sort" onchange="document.getElementById('sort-form').submit()">
+                    <option value="newest" {% if sort_by == 'newest' %}selected{% endif %}>Новизне</option>
+                    <option value="price_asc" {% if sort_by == 'price_asc' %}selected{% endif %}>Цене (по возрастанию)</option>
+                    <option value="price_desc" {% if sort_by == 'price_desc' %}selected{% endif %}>Цене (по убыванию)</option>
+                    <option value="popularity" {% if sort_by == 'popularity' %}selected{% endif %}>Популярности</option>
+                </select>
+            </form>
+        </div>
+    </div>
+
+    <div class="catalog__content">
+        <aside class="catalog__sidebar">
+            <div class="filter-block">
+                <h3 class="filter-block__title">Фильтры</h3>
+                <form action="" method="GET" class="filter-form">
+                    {% if search_query %}
+                    <input type="hidden" name="q" value="{{ search_query }}">
+                    {% endif %}
+                    {% if sort_by %}
+                    <input type="hidden" name="sort" value="{{ sort_by }}">
+                    {% endif %}
+                    
+                    <div class="filter-group">
+                        <h4 class="filter-group__title">Категории</h4>
+                        <div class="filter-group__content">
+                            {% for category in categories %}
+                            <div class="filter-checkbox">
+                                <input type="radio" name="category" id="category-{{ category.id }}" value="{{ category.slug }}" {% if current_category == category.slug %}checked{% endif %}>
+                                <label for="category-{{ category.id }}">{{ category.name }}</label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <h4 class="filter-group__title">Бренды</h4>
+                        <div class="filter-group__content">
+                            {% for brand in brands %}
+                            <div class="filter-checkbox">
+                                <input type="radio" name="brand" id="brand-{{ brand.id }}" value="{{ brand.slug }}" {% if current_brand == brand.slug %}checked{% endif %}>
+                                <label for="brand-{{ brand.id }}">{{ brand.name }}</label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <h4 class="filter-group__title">Цена</h4>
+                        <div class="filter-group__content">
+                            <div class="price-range">
+                                <input type="number" name="min_price" placeholder="От" value="{{ min_price }}" min="0">
+                                <span>-</span>
+                                <input type="number" name="max_price" placeholder="До" value="{{ max_price }}" min="0">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="filter-actions">
+                        <button type="submit" class="btn btn-primary btn-sm">Применить</button>
+                        <a href="{% url 'products:catalog' %}" class="btn btn-secondary btn-sm">Сбросить</a>
+                    </div>
+                </form>
+            </div>
+        </aside>
+        
+        <div class="catalog__products">
+            {% if products %}
+            <div class="products-grid">
+                {% for product in products %}
+                <div class="product-card">
+                    <a href="{% url 'products:product_detail' product.slug %}">
+                        <div class="product-card__image">
+                            {% if product.images.exists %}
+                            <img src="{{ product.images.first.image.url }}" alt="{{ product.name }}">
+                            {% else %}
+                            <img src="/static/images/product-placeholder.jpg" alt="{{ product.name }}">
+                            {% endif %}
+                        </div>
+                        <div class="product-card__content">
+                            <h3 class="product-card__title">{{ product.name }}</h3>
+                            <div class="product-card__brand">{{ product.brand.name }}</div>
+                            <div class="product-card__price">
+                                {% if product.discount_price %}
+                                <span class="product-card__price-old">{{ product.price }} ₽</span>
+                                <span class="product-card__price-current">{{ product.discount_price }} ₽</span>
+                                {% else %}
+                                <span class="product-card__price-current">{{ product.price }} ₽</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </a>
+                    <form action="{% url 'cart:add_to_cart' product.id %}" method="post" class="add-to-cart-form">
+                        {% csrf_token %}
+                        <input type="hidden" name="quantity" value="1">
+                        <button type="submit" class="btn btn-primary btn-sm">В корзину</button>
+                    </form>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="no-products">
+                <p>По вашему запросу ничего не найдено.</p>
+                <a href="{% url 'products:catalog' %}" class="btn btn-primary">Сбросить фильтры</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+Ваша корзина
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1>Ваша корзина</h1>
+    {% if cart %}
+        <table class="table table-striped mt-4">
+            <thead>
+                <tr>
+                    <th>Изображение</th>
+                    <th>Товар</th>
+                    <th>Количество</th>
+                    <th>Удалить</th>
+                    <th class="text-end">Цена за единицу</th>
+                    <th class="text-end">Общая стоимость</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in cart %}
+                    {% with product=item.product %}
+                        <tr>
+                            <td>
+                                <a href="{{ product.get_absolute_url }}">
+                                    {% if product.images.exists %}
+                                        <img src="{{ product.images.first.image.url }}" alt="{{ product.name }}" style="height: 50px;">
+                                    {% else %}
+                                        <img src="{% static 'images/no_image.png' %}" alt="No image" style="height: 50px;">
+                                    {% endif %}
+                                </a>
+                            </td>
+                            <td>{{ product.name }}</td>
+                            <td>
+                                <form action="{% url 'cart:cart_add' product.id %}" method="post">
+                                    {{ item.update_quantity_form.quantity }}
+                                    {{ item.update_quantity_form.update }}
+                                    <button type="submit" class="btn btn-sm btn-outline-secondary">Обновить</button>
+                                    {% csrf_token %}
+                                </form>
+                            </td>
+                            <td>
+                                <form action="{% url 'cart:cart_remove' product.id %}" method="post">
+                                    <button type="submit" class="btn btn-sm btn-danger">Удалить</button>
+                                    {% csrf_token %}
+                                </form>
+                            </td>
+                            <td class="text-end">{{ item.price }} ₽</td>
+                            <td class="text-end">{{ item.total_price }} ₽</td>
+                        </tr>
+                    {% endwith %}
+                {% endfor %}
+                <tr class="table-light">
+                    <td colspan="5"><strong>Итого</strong></td>
+                    <td class="text-end"><strong>{{ cart.get_total_price }} ₽</strong></td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="text-end mt-4">
+            <a href="{% url 'products:product_list' %}" class="btn btn-secondary">Продолжить покупки</a>
+            {# <a href="{% url 'orders:order_create' %}" class="btn btn-primary">Оформить заказ</a> #}
+            {# Раскомментируйте кнопку "Оформить заказ", когда будет готово приложение orders #}
+        </div>
+    {% else %}
+        <div class="alert alert-info mt-4">
+            Ваша корзина пуста.
+        </div>
+        <div class="text-center">
+             <a href="{% url 'products:product_list' %}" class="btn btn-primary">К каталогу</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %} 

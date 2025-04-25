@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+
+{% block title %}Корзина - Sports Nutrition{% endblock %}
+
+{% block content %}
+<div class="cart-page">
+    <h1 class="page-title">Корзина</h1>
+    
+    {% if cart_items %}
+    <div class="cart-content">
+        <div class="cart-items">
+            {% for item in cart_items %}
+            <div class="cart-item" id="cart-item-{{ item.id }}">
+                <div class="cart-item__image">
+                    {% if item.product.images.exists %}
+                    <img src="{{ item.product.images.first.image.url }}" alt="{{ item.product.name }}">
+                    {% else %}
+                    <img src="/static/images/product-placeholder.jpg" alt="{{ item.product.name }}">
+                    {% endif %}
+                </div>
+                <div class="cart-item__details">
+                    <h3 class="cart-item__title">
+                        <a href="{% url 'products:product_detail' item.product.slug %}">{{ item.product.name }}</a>
+                    </h3>
+                    <div class="cart-item__price">
+                        {% if item.product.discount_price %}
+                        <span class="cart-item__price-current">{{ item.product.discount_price }} ₽</span>
+                        {% else %}
+                        <span class="cart-item__price-current">{{ item.product.price }} ₽</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="cart-item__quantity">
+                    <form action="{% url 'cart:update_cart' item.id %}" method="post" class="cart-update-form" data-item-id="{{ item.id }}">
+                        {% csrf_token %}
+                        <div class="quantity-control">
+                            <button type="button" class="quantity-control__btn quantity-control__btn--minus">-</button>
+                            <input type="number" name="quantity" value="{{ item.quantity }}" min="0" max="{{ item.product.stock_quantity }}" class="cart-item-quantity">
+                            <button type="button" class="quantity-control__btn quantity-control__btn--plus">+</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="cart-item__total">
+                    <span id="item-total-{{ item.id }}">{{ item.get_total_price }} ₽</span>
+                </div>
+                <div class="cart-item__remove">
+                    <form action="{% url 'cart:remove_from_cart' item.id %}" method="post" class="cart-remove-form" data-item-id="{{ item.id }}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-remove"><i class="fas fa-trash"></i></button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <div class="cart-summary">
+            <h3 class="cart-summary__title">Итого</h3>
+            <div class="cart-summary__row">
+                <span>Товары ({{ cart_items.count }})</span>
+                <span class="cart-total">{{ total }} ₽</span>
+            </div>
+            <div class="cart-summary__actions">
+                <a href="{% url 'orders:checkout' %}" class="btn btn-primary">Оформить заказ</a>
+                <a href="{% url 'products:catalog' %}" class="btn btn-secondary">Продолжить покупки</a>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="cart-empty">
+        <p>Ваша корзина пуста</p>
+        <a href="{% url 'products:catalog' %}" class="btn btn-primary">Перейти в каталог</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        // Quantity control
+        $('.quantity-control__btn--minus').on('click', function() {
+            const input = $(this).siblings('input');
+            const value = parseInt(input.val());
+            if (value > 0) {
+                input.val(value - 1);
+                input.trigger('change');
+            }
+        });
+        
+        $('.quantity-control__btn--plus').on('click', function() {
+            const input = $(this).siblings('input');
+            const value = parseInt(input.val());
+            const max = parseInt(input.attr('max'));
+            if (value < max) {
+                input.val(value + 1);
+                input.trigger('change');
+            }
+        });
+    });
+</script>
+{% endblock %}

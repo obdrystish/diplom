@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+
+{% block title %}Каталог - Sports Nutrition{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <!-- Filters -->
+        <div class="col-md-3">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Фильтры</h5>
+                </div>
+                <div class="card-body">
+                    <form method="get">
+                        <!-- Categories -->
+                        <div class="mb-3">
+                            <h6>Категории</h6>
+                            {% for category in categories %}
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="category" 
+                                           value="{{ category.slug }}" id="category-{{ category.slug }}"
+                                           {% if current_category == category.slug %}checked{% endif %}>
+                                    <label class="form-check-label" for="category-{{ category.slug }}">
+                                        {{ category.name }}
+                                    </label>
+                                </div>
+                            {% endfor %}
+                        </div>
+
+                        <!-- Brands -->
+                        <div class="mb-3">
+                            <h6>Бренды</h6>
+                            {% for brand in brands %}
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="brand" 
+                                           value="{{ brand.slug }}" id="brand-{{ brand.slug }}"
+                                           {% if current_brand == brand.slug %}checked{% endif %}>
+                                    <label class="form-check-label" for="brand-{{ brand.slug }}">
+                                        {{ brand.name }}
+                                    </label>
+                                </div>
+                            {% endfor %}
+                        </div>
+
+                        <!-- Price Range -->
+                        <div class="mb-3">
+                            <h6>Цена</h6>
+                            <div class="input-group mb-2">
+                                <input type="number" class="form-control" name="min_price" 
+                                       placeholder="От" value="{{ min_price|default:'' }}">
+                                <input type="number" class="form-control" name="max_price" 
+                                       placeholder="До" value="{{ max_price|default:'' }}">
+                            </div>
+                        </div>
+
+                        <!-- Sort -->
+                        <div class="mb-3">
+                            <h6>Сортировка</h6>
+                            <select class="form-select" name="sort">
+                                <option value="newest" {% if sort_by == 'newest' %}selected{% endif %}>Сначала новые</option>
+                                <option value="price_asc" {% if sort_by == 'price_asc' %}selected{% endif %}>По возрастанию цены</option>
+                                <option value="price_desc" {% if sort_by == 'price_desc' %}selected{% endif %}>По убыванию цены</option>
+                                <option value="popularity" {% if sort_by == 'popularity' %}selected{% endif %}>По популярности</option>
+                            </select>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100">Применить</button>
+                        {% if request.GET %}
+                            <a href="{% url 'products:product_list' %}" class="btn btn-outline-secondary w-100 mt-2">Сбросить</a>
+                        {% endif %}
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Products -->
+        <div class="col-md-9">
+            <!-- Search -->
+            <div class="mb-4">
+                <form class="d-flex" method="get">
+                    <input class="form-control me-2" type="search" placeholder="Поиск товаров..." 
+                           name="q" value="{{ search_query|default:'' }}">
+                    <button class="btn btn-outline-primary" type="submit">Поиск</button>
+                </form>
+            </div>
+
+            {% if products %}
+                <div class="row">
+                    {% for product in products %}
+                        <div class="col-md-4 mb-4">
+                            <div class="card h-100">
+                                {% if product.images.exists %}
+                                    <img src="{{ product.images.first.image.url }}" class="card-img-top" alt="{{ product.name }}">
+                                {% endif %}
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ product.name }}</h5>
+                                    <p class="card-text">{{ product.description|truncatewords:20 }}</p>
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <div class="price">
+                                            {% if product.discount_price %}
+                                                <span class="text-muted text-decoration-line-through">{{ product.price }} ₽</span>
+                                                <span class="text-danger">{{ product.discount_price }} ₽</span>
+                                            {% else %}
+                                                <span>{{ product.price }} ₽</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <a href="{% url 'products:product_detail' product.slug %}" class="btn btn-sm btn-outline-primary">Подробнее</a>
+                                        <form action="{% url 'cart:cart_add' product.id %}" method="post">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-sm btn-primary">В корзину</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    По вашему запросу ничего не найдено.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %} 

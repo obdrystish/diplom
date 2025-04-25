@@ -1,0 +1,89 @@
+sports_nutrition/
+├── manage.py
+├── sports_nutrition/
+│   ├── __init__.py
+│   ├── settings.py
+│   ├── urls.py
+│   ├── wsgi.py
+│   └── asgi.py
+├── accounts/
+│   ├── __init__.py
+│   ├── admin.py
+│   ├── apps.py
+│   ├── models.py
+│   ├── views.py
+│   ├── urls.py
+│   ├── forms.py
+│   └── templates/
+│       └── accounts/
+│           ├── login.html
+│           ├── register.html
+│           ├── password_reset.html
+│           └── profile.html
+├── products/
+│   ├── __init__.py
+│   ├── admin.py
+│   ├── apps.py
+│   ├── models.py
+│   ├── views.py
+│   ├── urls.py
+│   └── templates/
+│       └── products/
+│           ├── catalog.html
+│           ├── product_detail.html
+│           └── search_results.html
+├── cart/
+│   ├── __init__.py
+│   ├── admin.py
+│   ├── apps.py
+│   ├── models.py
+│   ├── views.py
+│   ├── urls.py
+│   └── templates/
+│       └── cart/
+│           ├── cart.html
+│           └── checkout.html
+├── orders/
+│   ├── __init__.py
+│   ├── admin.py
+│   ├── apps.py
+│   ├── models.py
+│   ├── views.py
+│   ├── urls.py
+│   └── templates/
+│       └── orders/
+│           ├── order_confirmation.html
+│           └── order_history.html
+├── admin_panel/
+│   ├── __init__.py
+│   ├── admin.py
+│   ├── apps.py
+│   ├── models.py
+│   ├── views.py
+│   ├── urls.py
+│   └── templates/
+│       └── admin_panel/
+│           ├── dashboard.html
+│           ├── product_management.html
+│           ├── category_management.html
+│           ├── brand_management.html
+│           ├── order_management.html
+│           └── user_management.html
+└── static/
+    ├── css/
+    │   ├── main.css
+    │   ├── auth.css
+    │   ├── catalog.css
+    │   ├── product.css
+    │   ├── cart.css
+    │   └── admin.css
+    ├── js/
+    │   ├── main.js
+    │   ├── auth.js
+    │   ├── catalog.js
+    │   ├── product.js
+    │   ├── cart.js
+    │   └── admin.js
+    └── images/
+        ├── logo.png
+        └── product-placeholder.jpg

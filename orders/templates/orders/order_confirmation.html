@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block title %}Заказ подтвержден - Sports Nutrition{% endblock %}
+
+{% block content %}
+<div class="order-confirmation">
+    <div class="order-confirmation__header">
+        <i class="fas fa-check-circle"></i>
+        <h1>Заказ успешно оформлен!</h1>
+        <p>Номер вашего заказа: <strong>#{{ order.id }}</strong></p>
+    </div>
+    
+    <div class="order-confirmation__details">
+        <div class="order-info">
+            <h3>Информация о заказе</h3>
+            <ul>
+                <li><span>Дата заказа:</span> {{ order.created_at|date:"d.m.Y H:i" }}</li>
+                <li><span>Статус:</span> {{ order.get_status_display }}</li>
+                <li><span>Способ доставки:</span> {{ order.get_shipping_method_display }}</li>
+                <li><span>Способ оплаты:</span> {{ order.get_payment_method_display }}</li>
+                <li><span>Итоговая сумма:</span> {{ order.total_amount }} ₽</li>
+            </ul>
+        </div>
+        
+        <div class="shipping-info">
+            <h3>Информация о доставке</h3>
+            <ul>
+                <li><span>ФИО:</span> {{ order.full_name }}</li>
+                <li><span>Email:</span> {{ order.email }}</li>
+                <li><span>Телефон:</span> {{ order.phone }}</li>
+                <li><span>Адрес:</span> {{ order.address }}</li>
+            </ul>
+        </div>
+    </div>
+    
+    <div class="order-items">
+        <h3>Товары в заказе</h3>
+        <div class="order-items__list">
+            {% for item in order.items.all %}
+            <div class="order-item">
+                <div class="order-item__image">
+                    {% if item.product.images.exists %}
+                    <img src="{{ item.product.images.first.image.url }}" alt="{{ item.product.name }}">
+                    {% else %}
+                    <img src="/static/images/product-placeholder.jpg" alt="{{ item.product.name }}">
+                    {% endif %}
+                </div>
+                <div class="order-item__details">
+                    <h4 class="order-item__title">{{ item.product.name }}</h4>
+                    <div class="order-item__quantity">{{ item.quantity }} x {{ item.price }} ₽</div>
+                </div>
+                <div class="order-item__price">{{ item.get_total_price }} ₽</div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <div class="order-confirmation__actions">
+        <a href="{% url 'orders:order_history' %}" class="btn btn-primary">Мои заказы</a>
+        <a href="{% url 'products:catalog' %}" class="btn btn-secondary">Продолжить покупки</a>
+    </div>
+</div>
+{% endblock %}

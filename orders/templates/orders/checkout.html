@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+
+{% block title %}Оформление заказа - Sports Nutrition{% endblock %}
+
+{% block content %}
+<div class="checkout-page">
+    <h1 class="page-title">Оформление заказа</h1>
+    
+    <div class="checkout-content">
+        <div class="checkout-form">
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="form-section">
+                    <h3 class="form-section__title">Личные данные</h3>
+                    <div class="form-group">
+                        <label for="id_full_name">ФИО:</label>
+                        {{ form.full_name }}
+                    </div>
+                    <div class="form-group">
+                        <label for="id_email">Email:</label>
+                        {{ form.email }}
+                    </div>
+                    <div class="form-group">
+                        <label for="id_phone">Телефон:</label>
+                        {{ form.phone }}
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <h3 class="form-section__title">Адрес доставки</h3>
+                    <div class="form-group">
+                        <label for="id_address">Адрес:</label>
+                        {{ form.address }}
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <h3 class="form-section__title">Способ доставки</h3>
+                    <div class="form-group">
+                        {{ form.shipping_method }}
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <h3 class="form-section__title">Способ оплаты</h3>
+                    <div class="form-group">
+                        {{ form.payment_method }}
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">Подтвердить заказ</button>
+            </form>
+        </div>
+        
+        <div class="checkout-summary">
+            <h3 class="checkout-summary__title">Ваш заказ</h3>
+            
+            <div class="checkout-items">
+                {% for item in cart_items %}
+                <div class="checkout-item">
+                    <div class="checkout-item__image">
+                        {% if item.product.images.exists %}
+                        <img src="{{ item.product.images.first.image.url }}" alt="{{ item.product.name }}">
+                        {% else %}
+                        <img src="/static/images/product-placeholder.jpg" alt="{{ item.product.name }}">
+                        {% endif %}
+                    </div>
+                    <div class="checkout-item__details">
+                        <h4 class="checkout-item__title">{{ item.product.name }}</h4>
+                        <div class="checkout-item__quantity">{{ item.quantity }} x {{ item.product.get_display_price }} ₽</div>
+                    </div>
+                    <div class="checkout-item__price">{{ item.get_total_price }} ₽</div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <div class="checkout-summary__total">
+                <div class="checkout-summary__row">
+                    <span>Итого:</span>
+                    <span>{{ total }} ₽</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

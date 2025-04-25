@@ -1,0 +1,164 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ product.name }} - Sports Nutrition{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-6">
+            {% if product.images.exists %}
+                <div id="productCarousel" class="carousel slide" data-bs-ride="carousel">
+                    <div class="carousel-inner">
+                        {% for image in product.images.all %}
+                            <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                                <img src="{{ image.image.url }}" class="d-block w-100" alt="{{ product.name }}">
+                            </div>
+                        {% endfor %}
+                    </div>
+                    {% if product.images.count > 1 %}
+                        <button class="carousel-control-prev" type="button" data-bs-target="#productCarousel" data-bs-slide="prev">
+                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                            <span class="visually-hidden">Previous</span>
+                        </button>
+                        <button class="carousel-control-next" type="button" data-bs-target="#productCarousel" data-bs-slide="next">
+                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                            <span class="visually-hidden">Next</span>
+                        </button>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+        <div class="col-md-6">
+            <h1 class="mb-4">{{ product.name }}</h1>
+            <p class="text-muted">Бренд: <a href="{% url 'products:brand_detail' product.brand.slug %}">{{ product.brand.name }}</a></p>
+            
+            <div class="mb-4">
+                {% if product.discount_price %}
+                    <h3>
+                        <span class="text-danger">{{ product.discount_price }} ₽</span>
+                        <small class="text-muted text-decoration-line-through">{{ product.price }} ₽</small>
+                    </h3>
+                {% else %}
+                    <h3>{{ product.price }} ₽</h3>
+                {% endif %}
+            </div>
+
+            <div class="mb-4">
+                <h5>Описание:</h5>
+                <p>{{ product.description }}</p>
+            </div>
+
+            {% if product.composition %}
+                <div class="mb-4">
+                    <h5>Состав:</h5>
+                    <p>{{ product.composition }}</p>
+                </div>
+            {% endif %}
+
+            <div class="mb-4">
+                {# Используем форму из контекста #}
+                <form action="{% url 'cart:cart_add' product.id %}" method="post">
+                    {% csrf_token %}
+                    {{ cart_product_form.quantity }}
+                    {{ cart_product_form.update }} {# Скрытое поле #}
+                    <button type="submit" class="btn btn-primary">Добавить в корзину</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-5">
+        <div class="col-12">
+            <h3>Отзывы</h3>
+            {% if user.is_authenticated %}
+                {# Добавляем имя кнопке отправки отзыва, чтобы различать формы #}
+                <form method="post" action="" class="mb-4"> {# action="" т.к. обрабатываем в том же view #}
+                    {% csrf_token %}
+                    {{ review_form.as_p }}
+                    <button type="submit" name="submit_review" class="btn btn-primary">Оставить отзыв</button>
+                </form>
+            {% else %}
+                <p>Чтобы оставить отзыв, пожалуйста, <a href="{% url 'accounts:login' %}">войдите</a> в систему.</p>
+            {% endif %}
+
+            {% if reviews %}
+                {% for review in reviews %}
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <h5 class="card-title">{{ review.user.username }}</h5>
+                                <div class="text-muted">
+                                    {% for i in "12345"|make_list %}
+                                        {% if forloop.counter <= review.rating %}
+                                            <i class="fas fa-star text-warning"></i>
+                                        {% else %}
+                                            <i class="far fa-star"></i>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <p class="card-text">{{ review.comment }}</p>
+                            <small class="text-muted">{{ review.created_at|date:"d.m.Y" }}</small>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p>Пока нет отзывов.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if related_products %}
+        <div class="row mt-5">
+            <div class="col-12">
+                <h3>Похожие товары</h3>
+            </div>
+            {% for product in related_products %}
+                <div class="col-md-3 mb-4">
+                    <div class="card h-100">
+                        {% if product.images.exists %}
+                            <img src="{{ product.images.first.image.url }}" class="card-img-top" alt="{{ product.name }}">
+                        {% endif %}
+                        <div class="card-body">
+                            <h5 class="card-title">{{ product.name }}</h5>
+                            <p class="card-text">{{ product.description|truncatewords:20 }}</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="price">
+                                    {% if product.discount_price %}
+                                        <span class="text-muted text-decoration-line-through">{{ product.price }} ₽</span>
+                                        <span class="text-danger">{{ product.discount_price }} ₽</span>
+                                    {% else %}
+                                        <span>{{ product.price }} ₽</span>
+                                    {% endif %}
+                                </div>
+                                <a href="{% url 'products:product_detail' product.slug %}" class="btn btn-primary">Подробнее</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+</div>
+
+{% block extra_js %}
+<script>
+function incrementQuantity() {
+    var input = document.getElementById('quantity');
+    var max = parseInt(input.getAttribute('max'));
+    var value = parseInt(input.value);
+    if (value < max) {
+        input.value = value + 1;
+    }
+}
+
+function decrementQuantity() {
+    var input = document.getElementById('quantity');
+    var value = parseInt(input.value);
+    if (value > 1) {
+        input.value = value - 1;
+    }
+}
+</script>
+{% endblock %}
+{% endblock %}
