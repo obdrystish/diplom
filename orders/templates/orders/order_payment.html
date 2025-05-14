@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+
+{% block title %}Оплата заказа - Sports Nutrition{% endblock %}
+
+{% block extra_css %}
+<style>
+    .payment-card {
+        max-width: 480px;
+        margin: 48px auto;
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+        padding: 40px 32px 32px 32px;
+        text-align: center;
+    }
+    .payment-card h2 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 18px;
+    }
+    .payment-card .order-amount {
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-bottom: 24px;
+    }
+    .payment-form .form-control {
+        margin-bottom: 14px;
+        border-radius: 8px;
+        font-size: 1.08rem;
+    }
+    .payment-card .btn {
+        min-width: 180px;
+        font-size: 1.1rem;
+        padding: 10px 0;
+    }
+    .payment-loader {
+        display: none;
+        margin: 18px 0 0 0;
+        font-size: 1.1rem;
+        color: #28a745;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="payment-card">
+    <h2>Оплата заказа №{{ order.id }}</h2>
+    <div class="order-amount mb-3">Сумма к оплате: <span class="text-primary">{{ order.total_amount }} ₽</span></div>
+    <form method="post" class="payment-form" id="paymentForm" autocomplete="off">
+        {% csrf_token %}
+        <input type="text" class="form-control" name="card_number" placeholder="Номер карты" maxlength="19" required pattern="\d{16,19}">
+        <input type="text" class="form-control" name="card_name" placeholder="Имя на карте" maxlength="32" required>
+        <div class="d-flex gap-2">
+            <input type="text" class="form-control" name="card_expiry" placeholder="MM/YY" maxlength="5" required pattern="\d{2}/\d{2}">
+            <input type="text" class="form-control" name="card_cvc" placeholder="CVC" maxlength="4" required pattern="\d{3,4}">
+        </div>
+        <button type="submit" class="btn btn-success mt-2 w-100" id="payBtn">Оплатить</button>
+        <div class="payment-loader" id="paymentLoader">
+            <span class="spinner-border spinner-border-sm"></span> Оплата...
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const form = document.getElementById('paymentForm');
+    const payBtn = document.getElementById('payBtn');
+    const loader = document.getElementById('paymentLoader');
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        payBtn.disabled = true;
+        loader.style.display = 'block';
+        setTimeout(() => {
+            form.submit();
+        }, 1800); // имитация оплаты 1.8 сек
+    });
+</script>
+{% endblock %} 

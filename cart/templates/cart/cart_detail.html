@@ -8,7 +8,17 @@
 {% block content %}
 <div class="container mt-5">
     <h1>Ваша корзина</h1>
-    {% if cart %}
+    {% if not user.is_authenticated %}
+        <div class="alert alert-warning mt-4">
+            <h4 class="alert-heading">Требуется авторизация!</h4>
+            <p>Для добавления товаров в корзину и оформления заказа необходимо войти в систему.</p>
+            <hr>
+            <p class="mb-0">
+                <a href="{% url 'accounts:login' %}?next={{ request.path }}" class="btn btn-primary">Войти</a>
+                <a href="{% url 'accounts:register' %}" class="btn btn-outline-primary">Зарегистрироваться</a>
+            </p>
+        </div>
+    {% elif cart %}
         <table class="table table-striped mt-4">
             <thead>
                 <tr>
@@ -61,8 +71,7 @@
         </table>
         <div class="text-end mt-4">
             <a href="{% url 'products:product_list' %}" class="btn btn-secondary">Продолжить покупки</a>
-            {# <a href="{% url 'orders:order_create' %}" class="btn btn-primary">Оформить заказ</a> #}
-            {# Раскомментируйте кнопку "Оформить заказ", когда будет готово приложение orders #}
+            <a href="{% url 'orders:checkout' %}" class="btn btn-primary">Оформить заказ</a>
         </div>
     {% else %}
         <div class="alert alert-info mt-4">

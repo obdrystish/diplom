@@ -13,6 +13,9 @@ from .forms import RegistrationForm, UserUpdateForm, ProfileUpdateForm
 from .tokens import account_activation_token
 
 def login_view(request):
+    if request.user.is_authenticated:
+        return redirect('home')
+        
     if request.method == 'POST':
         form = AuthenticationForm(request, data=request.POST)
         if form.is_valid():
@@ -20,9 +23,15 @@ def login_view(request):
             password = form.cleaned_data.get('password')
             user = authenticate(username=username, password=password)
             if user is not None:
-                login(request, user)
-                messages.success(request, f'Добро пожаловать, {username}!')
-                return redirect('home')
+                if user.is_active:
+                    login(request, user)
+                    messages.success(request, f'Добро пожаловать, {username}!')
+                    next_url = request.GET.get('next', 'home')
+                    return redirect(next_url)
+                else:
+                    messages.error(request, 'Ваш аккаунт не активирован. Пожалуйста, проверьте вашу почту для активации.')
+            else:
+                messages.error(request, 'Неверное имя пользователя или пароль.')
     else:
         form = AuthenticationForm()
     return render(request, 'accounts/login.html', {'form': form})
@@ -33,22 +42,9 @@ def logout_view(request):
     return redirect('home')
 
 def register_view(request):
-    if request.method == 'POST':
-        form = UserCreationForm(request.POST)
-        if form.is_valid():
-            user = form.save()
-            login(request, user)
-            messages.success(request, 'Регистрация успешно завершена!')
-            return redirect('home')
-    else:
-        form = UserCreationForm()
-    return render(request, 'accounts/register.html', {'form': form})
-
-@login_required
-def profile_view(request):
-    return render(request, 'accounts/profile.html')
-
-def register(request):
+    if request.user.is_authenticated:
+        return redirect('home')
+        
     if request.method == 'POST':
         form = RegistrationForm(request.POST)
         if form.is_valid():
@@ -56,7 +52,7 @@ def register(request):
             user.is_active = False
             user.save()
             
-            # Send activation email
+            # Отправка email для активации
             current_site = get_current_site(request)
             mail_subject = 'Активация аккаунта на сайте Sports Nutrition'
             message = render_to_string('accounts/activation_email.html', {
@@ -74,6 +70,27 @@ def register(request):
     else:
         form = RegistrationForm()
     return render(request, 'accounts/register.html', {'form': form})
+
+@login_required
+def profile_view(request):
+    if request.method == 'POST':
+        u_form = UserUpdateForm(request.POST, instance=request.user)
+        p_form = ProfileUpdateForm(request.POST, instance=request.user.profile)
+        
+        if u_form.is_valid() and p_form.is_valid():
+            u_form.save()
+            p_form.save()
+            messages.success(request, 'Ваш профиль успешно обновлен!')
+            return redirect('accounts:profile')
+    else:
+        u_form = UserUpdateForm(instance=request.user)
+        p_form = ProfileUpdateForm(instance=request.user.profile)
+    
+    context = {
+        'u_form': u_form,
+        'p_form': p_form
+    }
+    return render(request, 'accounts/profile.html', context)
 
 def activate(request, uidb64, token):
     try:

@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block title %}Категории - Sports Nutrition{% endblock %}
+
+{% block extra_css %}
+<style>
+    .categories-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 24px;
+    }
+    .category-card {
+        background: #fff;
+        border-radius: 14px;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+        transition: box-shadow 0.2s;
+        padding: 24px 18px 18px 18px;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        height: 100%;
+    }
+    .category-card:hover {
+        box-shadow: 0 4px 20px rgba(0,0,0,0.13);
+    }
+    .category-card__title {
+        font-size: 1.15rem;
+        font-weight: 600;
+        margin-bottom: 8px;
+    }
+    .category-card__desc {
+        color: #666;
+        font-size: 0.98rem;
+        margin-bottom: 16px;
+        min-height: 40px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h1 class="mb-4">Категории</h1>
+    {% if categories %}
+    <div class="categories-grid">
+        {% for category in categories %}
+        <div class="category-card">
+            <div class="category-card__title">{{ category.name }}</div>
+            <div class="category-card__desc">{{ category.description|default:'Нет описания' }}</div>
+            <a href="{% url 'products:category_detail' category.slug %}" class="btn btn-outline-primary btn-sm mt-auto">Перейти в категорию</a>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="alert alert-info">Категории не найдены.</div>
+    {% endif %}
+</div>
+{% endblock %} 

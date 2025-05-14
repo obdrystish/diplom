@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+
+{% block title %}Главная - Sports Nutrition{% endblock %}
+
+{% block content %}
+<section class="hero-section">
+    <div class="container">
+        <h1 class="display-4 mb-4">Добро пожаловать в Sports Nutrition</h1>
+        <p class="lead mb-4">Ваш надежный партнер в мире спортивного питания и здорового образа жизни</p>
+        <a href="/products/" class="btn btn-primary btn-lg">Перейти к каталогу</a>
+    </div>
+</section>
+
+<section class="container my-5">
+    <h2 class="section-title">Почему выбирают нас?</h2>
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <i class="fas fa-medal fa-3x mb-3 text-primary"></i>
+                    <h3 class="h5">Качество</h3>
+                    <p>Только сертифицированные продукты от проверенных производителей</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <i class="fas fa-truck fa-3x mb-3 text-primary"></i>
+                    <h3 class="h5">Быстрая доставка</h3>
+                    <p>Доставляем по всей России в кратчайшие сроки</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <i class="fas fa-headset fa-3x mb-3 text-primary"></i>
+                    <h3 class="h5">Поддержка 24/7</h3>
+                    <p>Наши специалисты всегда готовы помочь вам</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="bg-light py-5">
+    <div class="container">
+        <h2 class="section-title">Популярные категории</h2>
+        <div class="row">
+            <div class="col-md-3 mb-4">
+                <div class="card category-card h-100">
+                    <img src="/static/images/protein.jpg" class="card-img-top" alt="Протеин">
+                    <div class="card-body">
+                        <h5 class="card-title">Протеин</h5>
+                        <a href="/products/?category=protein" class="btn btn-outline-primary">Смотреть</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-4">
+                <div class="card category-card h-100">
+                    <img src="/static/images/amino.jpg" class="card-img-top" alt="Аминокислоты">
+                    <div class="card-body">
+                        <h5 class="card-title">Аминокислоты</h5>
+                        <a href="/products/?category=amino" class="btn btn-outline-primary">Смотреть</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-4">
+                <div class="card category-card h-100">
+                    <img src="/static/images/vitamins.jpg" class="card-img-top" alt="Витамины">
+                    <div class="card-body">
+                        <h5 class="card-title">Витамины</h5>
+                        <a href="/products/?category=vitamins" class="btn btn-outline-primary">Смотреть</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-4">
+                <div class="card category-card h-100">
+                    <img src="/static/images/accessories.jpg" class="card-img-top" alt="Аксессуары">
+                    <div class="card-body">
+                        <h5 class="card-title">Аксессуары</h5>
+                        <a href="/products/?category=accessories" class="btn btn-outline-primary">Смотреть</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="container my-5">
+    <h2 class="section-title">Наши преимущества</h2>
+    <div class="row align-items-center">
+        <div class="col-md-6">
+            <img src="/static/images/about_us.jpg" class="img-fluid rounded shadow" alt="О нас">
+        </div>
+        <div class="col-md-6">
+            <h3>Почему мы лучшие?</h3>
+            <ul class="list-unstyled">
+                <li class="mb-3"><i class="fas fa-check text-success me-2"></i> Широкий ассортимент продукции</li>
+                <li class="mb-3"><i class="fas fa-check text-success me-2"></i> Гарантия качества всех товаров</li>
+                <li class="mb-3"><i class="fas fa-check text-success me-2"></i> Профессиональные консультации</li>
+                <li class="mb-3"><i class="fas fa-check text-success me-2"></i> Быстрая доставка по всей России</li>
+                <li class="mb-3"><i class="fas fa-check text-success me-2"></i> Удобные способы оплаты</li>
+            </ul>
+            <a href="/about/" class="btn btn-primary">Узнать больше</a>
+        </div>
+    </div>
+</section>
+{% endblock %} 

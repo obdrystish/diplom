@@ -1,91 +1,201 @@
+<!-- CATALOG.HTML ACTIVE -->
 {% extends 'base.html' %}
 
 {% block title %}Каталог товаров - Sports Nutrition{% endblock %}
 
-{% block content %}
-<div class="catalog">
-    <div class="catalog__header">
-        <h1 class="catalog__title">Каталог товаров</h1>
-        <div class="catalog__sort">
-            <form action="" method="GET" id="sort-form">
-                {% for key, value in request.GET.items %}
-                    {% if key != 'sort' %}
-                    <input type="hidden" name="{{ key }}" value="{{ value }}">
-                    {% endif %}
-                {% endfor %}
-                <label for="sort">Сортировать по:</label>
-                <select name="sort" id="sort" onchange="document.getElementById('sort-form').submit()">
-                    <option value="newest" {% if sort_by == 'newest' %}selected{% endif %}>Новизне</option>
-                    <option value="price_asc" {% if sort_by == 'price_asc' %}selected{% endif %}>Цене (по возрастанию)</option>
-                    <option value="price_desc" {% if sort_by == 'price_desc' %}selected{% endif %}>Цене (по убыванию)</option>
-                    <option value="popularity" {% if sort_by == 'popularity' %}selected{% endif %}>Популярности</option>
-                </select>
-            </form>
-        </div>
-    </div>
+{% block extra_css %}
+<style>
+    .catalog-filters-card {
+        border-radius: 14px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        background: #fff;
+    }
+    .catalog-search-sort {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        align-items: center;
+        margin-bottom: 24px;
+    }
+    .catalog-search-sort .form-control {
+        min-width: 220px;
+    }
+    .products-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 24px;
+    }
+    .product-card {
+        background: yellow !important;
+        border-radius: 14px;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+        transition: box-shadow 0.2s;
+        padding: 18px 16px 14px 16px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        height: 100%;
+        position: relative;
+    }
+    .product-card:hover {
+        box-shadow: 0 4px 20px rgba(0,0,0,0.13);
+    }
+    .product-card__image img {
+        max-width: 120px;
+        max-height: 120px;
+        margin-bottom: 12px;
+        object-fit: contain;
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 8px;
+    }
+    .product-card__title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 4px;
+        text-align: center;
+        min-height: 40px;
+    }
+    .product-card__brand {
+        font-size: 0.95rem;
+        color: #888;
+        margin-bottom: 8px;
+        text-align: center;
+    }
+    .product-card__price {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 10px;
+        text-align: center;
+    }
+    .product-card__price-old {
+        color: #b0b0b0;
+        text-decoration: line-through;
+        margin-right: 8px;
+        font-size: 1rem;
+    }
+    .product-card__price-current {
+        color: #007bff;
+        font-size: 1.2rem;
+        font-weight: 700;
+    }
+    .product-discount {
+        position: absolute;
+        top: 12px;
+        left: 12px;
+        background: #ff3860;
+        color: #fff;
+        font-size: 0.9rem;
+        font-weight: 600;
+        padding: 2px 10px;
+        border-radius: 8px;
+        z-index: 2;
+    }
+    .add-to-cart-form {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+    }
+    .add-to-cart-form .btn {
+        width: 100%;
+        font-weight: 500;
+    }
+    .no-products {
+        text-align: center;
+        margin-top: 40px;
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        padding: 40px 0;
+    }
+</style>
+{% endblock %}
 
-    <div class="catalog__content">
-        <aside class="catalog__sidebar">
-            <div class="filter-block">
-                <h3 class="filter-block__title">Фильтры</h3>
-                <form action="" method="GET" class="filter-form">
-                    {% if search_query %}
-                    <input type="hidden" name="q" value="{{ search_query }}">
-                    {% endif %}
-                    {% if sort_by %}
-                    <input type="hidden" name="sort" value="{{ sort_by }}">
-                    {% endif %}
-                    
-                    <div class="filter-group">
-                        <h4 class="filter-group__title">Категории</h4>
-                        <div class="filter-group__content">
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <!-- Filters -->
+        <aside class="col-lg-3 mb-4 mb-lg-0">
+            <div class="card catalog-filters-card">
+                <div class="card-header bg-white border-bottom-0">
+                    <h5 class="mb-0">Фильтры</h5>
+                </div>
+                <div class="card-body">
+                    <form method="get">
+                        <div class="mb-3">
+                            <h6>Категории</h6>
                             {% for category in categories %}
-                            <div class="filter-checkbox">
-                                <input type="radio" name="category" id="category-{{ category.id }}" value="{{ category.slug }}" {% if current_category == category.slug %}checked{% endif %}>
-                                <label for="category-{{ category.id }}">{{ category.name }}</label>
-                            </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="category" value="{{ category.slug }}" id="category-{{ category.slug }}" {% if current_category == category.slug %}checked{% endif %}>
+                                    <label class="form-check-label" for="category-{{ category.slug }}">{{ category.name }}</label>
+                                </div>
                             {% endfor %}
                         </div>
-                    </div>
-                    
-                    <div class="filter-group">
-                        <h4 class="filter-group__title">Бренды</h4>
-                        <div class="filter-group__content">
+                        <div class="mb-3">
+                            <h6>Бренды</h6>
                             {% for brand in brands %}
-                            <div class="filter-checkbox">
-                                <input type="radio" name="brand" id="brand-{{ brand.id }}" value="{{ brand.slug }}" {% if current_brand == brand.slug %}checked{% endif %}>
-                                <label for="brand-{{ brand.id }}">{{ brand.name }}</label>
-                            </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="brand" value="{{ brand.slug }}" id="brand-{{ brand.slug }}" {% if current_brand == brand.slug %}checked{% endif %}>
+                                    <label class="form-check-label" for="brand-{{ brand.slug }}">{{ brand.name }}</label>
+                                </div>
                             {% endfor %}
                         </div>
-                    </div>
-                    
-                    <div class="filter-group">
-                        <h4 class="filter-group__title">Цена</h4>
-                        <div class="filter-group__content">
-                            <div class="price-range">
-                                <input type="number" name="min_price" placeholder="От" value="{{ min_price }}" min="0">
-                                <span>-</span>
-                                <input type="number" name="max_price" placeholder="До" value="{{ max_price }}" min="0">
+                        <div class="mb-3">
+                            <h6>Цена</h6>
+                            <div class="input-group mb-2">
+                                <input type="number" class="form-control" name="min_price" placeholder="От" value="{{ min_price|default:'' }}">
+                                <input type="number" class="form-control" name="max_price" placeholder="До" value="{{ max_price|default:'' }}">
                             </div>
                         </div>
-                    </div>
-                    
-                    <div class="filter-actions">
-                        <button type="submit" class="btn btn-primary btn-sm">Применить</button>
-                        <a href="{% url 'products:catalog' %}" class="btn btn-secondary btn-sm">Сбросить</a>
-                    </div>
-                </form>
+                        <div class="mb-3">
+                            <h6>Сортировка</h6>
+                            <select class="form-select" name="sort">
+                                <option value="newest" {% if sort_by == 'newest' %}selected{% endif %}>Сначала новые</option>
+                                <option value="price_asc" {% if sort_by == 'price_asc' %}selected{% endif %}>По возрастанию цены</option>
+                                <option value="price_desc" {% if sort_by == 'price_desc' %}selected{% endif %}>По убыванию цены</option>
+                                <option value="popularity" {% if sort_by == 'popularity' %}selected{% endif %}>По популярности</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Применить</button>
+                        {% if request.GET %}
+                            <a href="{% url 'products:catalog' %}" class="btn btn-outline-secondary w-100 mt-2">Сбросить</a>
+                        {% endif %}
+                    </form>
+                </div>
             </div>
         </aside>
-        
-        <div class="catalog__products">
+        <!-- Products -->
+        <div class="col-lg-9">
+            <div class="catalog-search-sort mb-3">
+                <form class="d-flex flex-grow-1" method="get">
+                    <input class="form-control me-2" type="search" placeholder="Поиск товаров..." name="q" value="{{ search_query|default:'' }}">
+                    <button class="btn btn-outline-primary" type="submit">Поиск</button>
+                </form>
+                <form method="get">
+                    <select class="form-select" name="sort" onchange="this.form.submit()">
+                        <option value="newest" {% if sort_by == 'newest' %}selected{% endif %}>Сначала новые</option>
+                        <option value="price_asc" {% if sort_by == 'price_asc' %}selected{% endif %}>По возрастанию цены</option>
+                        <option value="price_desc" {% if sort_by == 'price_desc' %}selected{% endif %}>По убыванию цены</option>
+                        <option value="popularity" {% if sort_by == 'popularity' %}selected{% endif %}>По популярности</option>
+                    </select>
+                </form>
+            </div>
             {% if products %}
             <div class="products-grid">
                 {% for product in products %}
                 <div class="product-card">
-                    <a href="{% url 'products:product_detail' product.slug %}">
-                        <div class="product-card__image">
+                    {# Бейджи #}
+                    {% if product.stock_quantity == 0 %}
+                        <span class="product-discount bg-secondary" style="background:#adb5bd;">Нет в наличии</span>
+                    {% elif product.discount_price %}
+                        <span class="product-discount">Скидка</span>
+                    {% elif product.is_featured %}
+                        <span class="product-discount bg-success" style="background:#28a745;">Рекомендуем</span>
+                    {% elif product.created_at|date:'U' > now|date:'U'|add:'-1209600' %}
+                        <span class="product-discount bg-info" style="background:#17a2b8;">Новинка</span>
+                    {% endif %}
+                    <a href="{% url 'products:product_detail' product.slug %}" class="text-decoration-none text-dark w-100">
+                        <div class="product-card__image text-center">
                             {% if product.images.exists %}
                             <img src="{{ product.images.first.image.url }}" alt="{{ product.name }}">
                             {% else %}
@@ -94,7 +204,20 @@
                         </div>
                         <div class="product-card__content">
                             <h3 class="product-card__title">{{ product.name }}</h3>
-                            <div class="product-card__brand">{{ product.brand.name }}</div>
+                            <div class="product-card__brand">{{ product.brand.name }}{% if product.weight %}, {{ product.weight }} г{% endif %}</div>
+                            {# Рейтинг #}
+                            {% if product.reviews.count > 0 %}
+                            <div class="mb-1" style="color:#ffc107; font-size:1.1em;">
+                                {% with total=0 %}
+                                {% for review in product.reviews.all %}{% widthratio review.rating 1 1 as r %}{% widthratio total|add:r 1 1 as total %}{% endfor %}
+                                {% widthratio total product.reviews.count 1 as avg_rating %}
+                                {% for i in "12345"|make_list %}
+                                    {% if i|add:'0' <= avg_rating %}<i class="fas fa-star"></i>{% else %}<i class="far fa-star"></i>{% endif %}
+                                {% endfor %}
+                                <span class="text-muted" style="font-size:0.95em;">({{ product.reviews.count }})</span>
+                                {% endwith %}
+                            </div>
+                            {% endif %}
                             <div class="product-card__price">
                                 {% if product.discount_price %}
                                 <span class="product-card__price-old">{{ product.price }} ₽</span>
@@ -103,19 +226,24 @@
                                 <span class="product-card__price-current">{{ product.price }} ₽</span>
                                 {% endif %}
                             </div>
+                            <div class="text-muted small mb-2">{{ product.description|truncatewords:12 }}</div>
                         </div>
                     </a>
-                    <form action="{% url 'cart:add_to_cart' product.id %}" method="post" class="add-to-cart-form">
-                        {% csrf_token %}
-                        <input type="hidden" name="quantity" value="1">
-                        <button type="submit" class="btn btn-primary btn-sm">В корзину</button>
-                    </form>
+                    <div class="d-flex gap-2 w-100 mt-auto">
+                        <a href="{% url 'products:product_detail' product.slug %}" class="btn btn-outline-primary btn-sm w-50">Подробнее</a>
+                        <form action="{% url 'cart:cart_add' product.id %}" method="post" class="add-to-cart-form w-50">
+                            {% csrf_token %}
+                            <input type="hidden" name="quantity" value="1">
+                            <input type="hidden" name="update" value="False">
+                            <button type="submit" class="btn btn-primary btn-sm w-100" {% if product.stock_quantity == 0 %}disabled{% endif %}>В корзину</button>
+                        </form>
+                    </div>
                 </div>
                 {% endfor %}
             </div>
             {% else %}
             <div class="no-products">
-                <p>По вашему запросу ничего не найдено.</p>
+                <p class="mb-3">По вашему запросу ничего не найдено.</p>
                 <a href="{% url 'products:catalog' %}" class="btn btn-primary">Сбросить фильтры</a>
             </div>
             {% endif %}

@@ -13,6 +13,7 @@ def cart_detail(request):
         item['update_quantity_form'] = CartAddProductForm(initial={'quantity': item['quantity'], 'update': True})
     return render(request, 'cart/cart_detail.html', {'cart': cart})
 
+@login_required
 @require_POST
 def cart_add(request, product_id):
     cart = Cart(request)
@@ -27,6 +28,7 @@ def cart_add(request, product_id):
     # В оригинальном коде была проверка request.headers.get('x-requested-with') == 'XMLHttpRequest'
     return redirect('cart:cart_detail') 
 
+@login_required
 @require_POST
 def cart_remove(request, product_id):
     cart = Cart(request)

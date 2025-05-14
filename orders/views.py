@@ -1,23 +1,21 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from django.conf import settings
-from cart.models import CartItem
+from cart.cart import Cart
 from .models import Order, OrderItem
 from .forms import OrderForm
 
 @login_required
 def checkout(request):
-    cart_items = CartItem.objects.filter(user=request.user)
-    
-    if not cart_items.exists():
+    cart = Cart(request)
+    cart_items = list(cart)
+    if not cart_items:
         messages.warning(request, 'Ваша корзина пуста')
         return redirect('cart:cart_detail')
-    
-    total = sum(item.get_total_price() for item in cart_items)
-    
+    total = cart.get_total_price()
     if request.method == 'POST':
         form = OrderForm(request.POST)
         if form.is_valid():
@@ -25,51 +23,46 @@ def checkout(request):
             order.user = request.user
             order.total_amount = total
             order.save()
-            
             # Create order items
-            for cart_item in cart_items:
+            for item in cart:
                 OrderItem.objects.create(
                     order=order,
-                    product=cart_item.product,
-                    price=cart_item.product.get_display_price(),
-                    quantity=cart_item.quantity
+                    product=item['product'],
+                    price=item['price'],
+                    quantity=item['quantity']
                 )
-            
-            # Clear cart
-            cart_items.delete()
-            
-            # Send order confirmation email
+            cart.clear()
             send_order_confirmation_email(order)
-            
             messages.success(request, 'Ваш заказ успешно оформлен!')
-            return redirect('orders:order_confirmation', order_id=order.id)
+            return redirect('orders:order_payment', order_id=order.id)
     else:
-        # Pre-fill form with user data
         initial_data = {
             'full_name': f"{request.user.first_name} {request.user.last_name}",
             'email': request.user.email,
-            'phone': request.user.profile.phone,
-            'address': request.user.profile.address
+            'phone': getattr(getattr(request.user, 'profile', None), 'phone', ''),
+            'address': getattr(getattr(request.user, 'profile', None), 'address', '')
         }
         form = OrderForm(initial=initial_data)
-    
     context = {
         'form': form,
         'cart_items': cart_items,
         'total': total
     }
-    
     return render(request, 'orders/checkout.html', context)
 
 @login_required
+def order_payment(request, order_id):
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+    if request.method == 'POST':
+        order.status = 'completed'
+        order.save()
+        return redirect('orders:order_confirmation', order_id=order.id)
+    return render(request, 'orders/order_payment.html', {'order': order})
+
+@login_required
 def order_confirmation(request, order_id):
-    order = Order.objects.get(id=order_id, user=request.user)
-    
-    context = {
-        'order': order
-    }
-    
-    return render(request, 'orders/order_confirmation.html', context)
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+    return render(request, 'orders/order_confirmation.html', {'order': order})
 
 @login_required
 def order_history(request):

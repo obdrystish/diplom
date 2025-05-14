@@ -1,5 +1,6 @@
 from django.contrib import admin
 from .models import Order, OrderItem
+from cart.cart import Cart
 
 class OrderItemInline(admin.TabularInline):
     model = OrderItem

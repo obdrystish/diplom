@@ -210,3 +210,7 @@ def product_list(request):
     }
     
     return render(request, 'products/product_list.html', context)
+
+def category_list(request):
+    categories = Category.objects.all()
+    return render(request, 'products/category_list.html', {'categories': categories})
