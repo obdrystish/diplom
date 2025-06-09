@@ -61,6 +61,7 @@ class Product(models.Model):
     flavor = models.CharField(max_length=100, blank=True, verbose_name="Вкус")
     composition = models.TextField(blank=True, verbose_name="Состав")
     is_featured = models.BooleanField(default=False, verbose_name="Рекомендуемый товар")
+    is_new = models.BooleanField(default=False, verbose_name="Новинка")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Дата обновления")
     popularity = models.PositiveIntegerField(default=0, verbose_name="Популярность")

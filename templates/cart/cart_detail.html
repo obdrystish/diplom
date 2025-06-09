@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Корзина{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">Корзина</h1>
+
+    {% if cart_items %}
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    {% for item in cart_items %}
+                    <div class="row mb-4">
+                        <div class="col-md-2">
+                            {% if item.product.images.exists %}
+                            <img src="{{ item.product.images.first.image.url }}" class="img-fluid rounded" alt="{{ item.product.name }}">
+                            {% else %}
+                            <img src="{% static 'images/product-placeholder.jpg' %}" class="img-fluid rounded" alt="No image">
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <h5 class="card-title">{{ item.product.name }}</h5>
+                            <p class="text-muted">{{ item.product.brand.name }}</p>
+                            <p class="card-text">{{ item.product.price }} ₽</p>
+                        </div>
+                        <div class="col-md-2">
+                            <form action="{% url 'cart:cart_update' item.product.id %}" method="post" class="d-flex align-items-center">
+                                {% csrf_token %}
+                                <input type="number" name="quantity" value="{{ item.quantity }}" min="1" class="form-control form-control-sm" style="width: 60px;">
+                                <input type="hidden" name="update" value="True">
+                                <button type="submit" class="btn btn-sm btn-outline-primary ms-2">
+                                    <i class="fas fa-sync-alt"></i>
+                                </button>
+                            </form>
+                        </div>
+                        <div class="col-md-2 text-end">
+                            <form action="{% url 'cart:cart_remove' item.product.id %}" method="post">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-outline-danger">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    {% if not forloop.last %}
+                    <hr>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Итого</h5>
+                    <p class="card-text">Товары ({{ cart_items|length }}): {{ total_price }} ₽</p>
+                    <a href="{% url 'orders:checkout' %}" class="btn btn-primary w-100">Оформить заказ</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle"></i> Ваша корзина пуста. <a href="{% url 'products:product_list' %}">Перейти к покупкам</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %} 

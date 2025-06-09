@@ -23,7 +23,7 @@ class Order(models.Model):
     )
     
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='orders', verbose_name="Пользователь")
-    full_name = models.CharField(max_length=255, verbose_name="ФИО")
+    full_name = models.CharField(max_length=50, verbose_name="ФИО")
     email = models.EmailField(verbose_name="Email")
     phone = models.CharField(max_length=20, verbose_name="Телефон")
     address = models.TextField(verbose_name="Адрес доставки")

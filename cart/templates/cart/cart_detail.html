@@ -18,7 +18,7 @@
                 <a href="{% url 'accounts:register' %}" class="btn btn-outline-primary">Зарегистрироваться</a>
             </p>
         </div>
-    {% elif cart %}
+    {% elif cart_items|length > 0 %}
         <table class="table table-striped mt-4">
             <thead>
                 <tr>
@@ -31,7 +31,7 @@
                 </tr>
             </thead>
             <tbody>
-                {% for item in cart %}
+                {% for item in cart_items %}
                     {% with product=item.product %}
                         <tr>
                             <td>
@@ -45,11 +45,11 @@
                             </td>
                             <td>{{ product.name }}</td>
                             <td>
-                                <form action="{% url 'cart:cart_add' product.id %}" method="post">
-                                    {{ item.update_quantity_form.quantity }}
-                                    {{ item.update_quantity_form.update }}
-                                    <button type="submit" class="btn btn-sm btn-outline-secondary">Обновить</button>
+                                <form action="{% url 'cart:cart_add' product.id %}" method="post" class="d-flex align-items-center">
                                     {% csrf_token %}
+                                    <input type="number" name="quantity" value="{{ item.quantity }}" min="1" class="form-control form-control-sm" style="width: 60px;">
+                                    <input type="hidden" name="update" value="True">
+                                    <button type="submit" class="btn btn-sm btn-outline-primary ms-2">Обновить</button>
                                 </form>
                             </td>
                             <td>
@@ -65,7 +65,7 @@
                 {% endfor %}
                 <tr class="table-light">
                     <td colspan="5"><strong>Итого</strong></td>
-                    <td class="text-end"><strong>{{ cart.get_total_price }} ₽</strong></td>
+                    <td class="text-end"><strong>{{ total_price }} ₽</strong></td>
                 </tr>
             </tbody>
         </table>
@@ -82,4 +82,4 @@
         </div>
     {% endif %}
 </div>
-{% endblock %} 
+{% endblock %}

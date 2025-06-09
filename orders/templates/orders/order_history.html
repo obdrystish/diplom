@@ -21,8 +21,10 @@
                         <td>{{ order.id }}</td>
                         <td>{{ order.created_at|date:'d.m.Y H:i' }}</td>
                         <td>{{ order.get_status_display }}</td>
-                        <td>{{ order.total_price }} ₽</td>
-                        <td><a href="{% url 'orders:order_detail' order.id %}" class="btn btn-sm btn-outline-primary">Подробнее</a></td>
+                        <td>{{ order.total_amount }} ₽</td>
+                        <td>
+                            <button type="button" class="btn btn-sm btn-outline-primary view-order-details" data-bs-toggle="modal" data-bs-target="#orderDetailModal" data-order-id="{{ order.id }}">Подробнее</button>
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -32,4 +34,82 @@
         <div class="alert alert-info">У вас пока нет заказов.</div>
     {% endif %}
 </div>
+
+<!-- Модальное окно для деталей заказа -->
+<div class="modal fade" id="orderDetailModal" tabindex="-1" aria-labelledby="orderDetailModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="orderDetailModalLabel">Детали заказа</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="orderDetailContent">
+                <!-- Здесь будут загружаться детали заказа -->
+                <div class="text-center"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Загрузка...</span></div></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const orderDetailModal = document.getElementById('orderDetailModal');
+    orderDetailModal.addEventListener('show.bs.modal', function (event) {
+        const button = event.relatedTarget; 
+        const orderId = button.getAttribute('data-order-id');
+        const modalBody = orderDetailModal.querySelector('#orderDetailContent');
+
+        // Очищаем и показываем спиннер
+        modalBody.innerHTML = '<div class="text-center"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Загрузка...</span></div></div>';
+
+        // Загружаем детали заказа через AJAX
+        fetch(`/orders/${orderId}/details/`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                let itemsHtml = '';
+                data.items.forEach(item => {
+                    itemsHtml += `
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>${item.product_name} (${item.quantity} x ${item.price} ₽)</span>
+                            <span>${item.total_price} ₽</span>
+                        </li>
+                    `;
+                });
+
+                modalBody.innerHTML = `
+                    <p><strong>ID заказа:</strong> ${data.id}</p>
+                    <p><strong>Дата заказа:</strong> ${data.created_at}</p>
+                    <p><strong>Статус:</strong> ${data.status_display}</p>
+                    <p><strong>Сумма заказа:</strong> ${data.total_amount} ₽</p>
+                    <p><strong>ФИО:</strong> ${data.full_name}</p>
+                    <p><strong>Email:</strong> ${data.email}</p>
+                    <p><strong>Телефон:</strong> ${data.phone}</p>
+                    <p><strong>Адрес доставки:</strong> ${data.address}</p>
+                    <p><strong>Способ доставки:</strong> ${data.shipping_method_display}</p>
+                    <p><strong>Способ оплаты:</strong> ${data.payment_method_display}</p>
+                    
+                    <h6 class="mt-4">Состав заказа:</h6>
+                    <ul class="list-group">
+                        ${itemsHtml}
+                    </ul>
+                `;
+            })
+            .catch(error => {
+                console.error('Error fetching order details:', error);
+                modalBody.innerHTML = '<div class="alert alert-danger">Не удалось загрузить детали заказа.</div>';
+            });
+    });
+});
+</script>
 {% endblock %} 

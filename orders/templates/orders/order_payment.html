@@ -48,8 +48,8 @@
     <div class="order-amount mb-3">Сумма к оплате: <span class="text-primary">{{ order.total_amount }} ₽</span></div>
     <form method="post" class="payment-form" id="paymentForm" autocomplete="off">
         {% csrf_token %}
-        <input type="text" class="form-control" name="card_number" placeholder="Номер карты" maxlength="19" required pattern="\d{16,19}">
-        <input type="text" class="form-control" name="card_name" placeholder="Имя на карте" maxlength="32" required>
+        <input type="text" class="form-control" name="card_number" placeholder="Номер карты" maxlength="16" required pattern="\d{16}">
+        <input type="text" class="form-control" name="card_name" placeholder="Имя на карте" maxlength="50" required pattern="^[a-zA-Zа-яА-Я\s]*$">
         <div class="d-flex gap-2">
             <input type="text" class="form-control" name="card_expiry" placeholder="MM/YY" maxlength="5" required pattern="\d{2}/\d{2}">
             <input type="text" class="form-control" name="card_cvc" placeholder="CVC" maxlength="4" required pattern="\d{3,4}">
@@ -67,6 +67,21 @@
     const form = document.getElementById('paymentForm');
     const payBtn = document.getElementById('payBtn');
     const loader = document.getElementById('paymentLoader');
+    const cardExpiryInput = document.querySelector('input[name="card_expiry"]');
+
+    cardExpiryInput.addEventListener('input', function(e) {
+        let value = e.target.value;
+        // Удаляем все, кроме цифр
+        value = value.replace(/\D/g, '');
+
+        if (value.length > 2) {
+            // Вставляем слэш после двух цифр
+            value = value.substring(0, 2) + '/' + value.substring(2, 4);
+        }
+
+        e.target.value = value;
+    });
+
     form.addEventListener('submit', function(e) {
         e.preventDefault();
         payBtn.disabled = true;

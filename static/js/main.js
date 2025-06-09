@@ -1,12 +1,7 @@
 $(document).ready(() => {
-  // Close messages
-  $(".message__close").on("click", function () {
-    $(this).parent().fadeOut()
-  })
-
-  // Auto-hide messages after 5 seconds
+  // Auto-hide alerts after 5 seconds
   setTimeout(() => {
-    $(".message").fadeOut()
+    $(".alert").fadeOut()
   }, 5000)
 
   // Add to cart functionality
@@ -24,15 +19,15 @@ $(document).ready(() => {
       success: (response) => {
         if (response.status === "success") {
           // Update cart count
-          $(".cart-count").text(response.cart_count)
+          $(".badge.bg-danger").text(response.cart_count)
 
           // Show success message
           const message = $(
-            '<div class="message message--success">' +
+            '<div class="alert alert-success alert-dismissible fade show">' +
               response.message +
-              '<button class="message__close"><i class="fas fa-times"></i></button></div>',
+              '<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>'
           )
-          $(".messages").append(message)
+          $(".container.mt-3").append(message)
 
           // Auto-hide message after 3 seconds
           setTimeout(() => {
@@ -40,82 +35,20 @@ $(document).ready(() => {
           }, 3000)
         }
       },
-    })
-  })
+      error: (xhr) => {
+        // Show error message
+        const message = $(
+          '<div class="alert alert-danger alert-dismissible fade show">' +
+            'Произошла ошибка при добавлении товара в корзину' +
+            '<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>'
+        )
+        $(".container.mt-3").append(message)
 
-  // Update cart quantity
-  $(".cart-item-quantity").on("change", function () {
-    const form = $(this).closest("form")
-    form.submit()
-  })
-
-  // Cart update form
-  $(".cart-update-form").on("submit", function (e) {
-    e.preventDefault()
-
-    const form = $(this)
-    const url = form.attr("action")
-    const data = form.serialize()
-
-    $.ajax({
-      type: "POST",
-      url: url,
-      data: data,
-      success: (response) => {
-        if (response.status === "success") {
-          // Update cart count
-          $(".cart-count").text(response.cart_count)
-
-          // Update item total
-          const itemId = form.data("item-id")
-          $("#item-total-" + itemId).text(response.item_total.toFixed(2) + " ₽")
-
-          // Update cart total
-          $(".cart-total").text(response.total.toFixed(2) + " ₽")
-
-          // If quantity is 0, remove the item
-          if (Number.parseInt(form.find(".cart-item-quantity").val()) === 0) {
-            $("#cart-item-" + itemId).fadeOut(function () {
-              $(this).remove()
-            })
-          }
-        }
-      },
-    })
-  })
-
-  // Remove from cart
-  $(".cart-remove-form").on("submit", function (e) {
-    e.preventDefault()
-
-    const form = $(this)
-    const url = form.attr("action")
-
-    $.ajax({
-      type: "POST",
-      url: url,
-      data: form.serialize(),
-      success: (response) => {
-        if (response.status === "success") {
-          // Update cart count
-          $(".cart-count").text(response.cart_count)
-
-          // Update cart total
-          $(".cart-total").text(response.total.toFixed(2) + " ₽")
-
-          // Remove item from DOM
-          const itemId = form.data("item-id")
-          $("#cart-item-" + itemId).fadeOut(function () {
-            $(this).remove()
-          })
-
-          // If cart is empty, show empty message
-          if (response.cart_count === 0) {
-            $(".cart-items").html('<p class="cart-empty">Ваша корзина пуста</p>')
-            $(".cart-summary").hide()
-          }
-        }
-      },
+        // Auto-hide message after 3 seconds
+        setTimeout(() => {
+          message.fadeOut()
+        }, 3000)
+      }
     })
   })
 
@@ -132,5 +65,17 @@ $(document).ready(() => {
     mainImage.fadeOut(300, () => {
       mainImage.attr("src", newSrc).fadeIn(300)
     })
+  })
+
+  // Initialize tooltips
+  const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+  tooltipTriggerList.map(function (tooltipTriggerEl) {
+    return new bootstrap.Tooltip(tooltipTriggerEl)
+  })
+
+  // Initialize popovers
+  const popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'))
+  popoverTriggerList.map(function (popoverTriggerEl) {
+    return new bootstrap.Popover(popoverTriggerEl)
   })
 })

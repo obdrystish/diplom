@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}Контакты - Sports Nutrition{% endblock %}
+{% block title %}Контакты - СмаевПит{% endblock %}
 
 {% block content %}
 <div class="container mt-5">
@@ -10,22 +10,32 @@
         <div class="col-md-12">
             <h3>Свяжитесь с нами</h3>
             <p>Если у вас есть вопросы, предложения или вы хотите узнать больше о нашей продукции, пожалуйста, свяжитесь с нами любым удобным способом:</p>
-            <ul>
-                <li><strong>Телефон:</strong> +7 (999) 123-45-67</li>
-                <li><strong>Email:</strong> info@sports-nutrition.com</li>
-                <li><strong>Адрес:</strong> г. Москва, ул. Спортивная, д. 10, офис 5</li> {# Замените на реальный адрес #}
+            <ul class="list-unstyled space-y-2 mb-4">
+                <li class="flex items-center">
+                    <i class="fas fa-phone-alt me-2 text-primary"></i>
+                    <span><strong>Телефон:</strong> +7 (999) 123-45-67</span>
+                </li>
+                <li class="flex items-center">
+                    <i class="fas fa-envelope me-2 text-primary"></i>
+                    <span><strong>Email:</strong> info@sports-nutrition.com</span>
+                </li>
+                <li class="flex items-center">
+                    <i class="fas fa-map-marker-alt me-2 text-primary"></i>
+                    <span><strong>Адрес:</strong> г. Тверь, ул. Качков, 14</span>
+                </li>
             </ul>
             
             <h5>Часы работы:</h5>
-            <p>Понедельник - Пятница: 10:00 - 20:00<br>Суббота - Воскресенье: 11:00 - 18:00</p>
-
-            <h5>Мы в соцсетях:</h5>
-            <div class="social-links">
-                <a href="#" class="text-dark me-2"><i class="fab fa-vk fa-2x"></i></a>
-                <a href="#" class="text-dark me-2"><i class="fab fa-telegram fa-2x"></i></a>
-                <a href="#" class="text-dark"><i class="fab fa-instagram fa-2x"></i></a>
-                 {# Замените # на реальные ссылки #}
-            </div>
+            <ul class="list-unstyled space-y-2">
+                <li class="flex justify-between">
+                    <span>Понедельник - Пятница:</span>
+                    <span>10:00 - 20:00</span>
+                </li>
+                <li class="flex justify-between">
+                    <span>Суббота - Воскресенье:</span>
+                    <span>11:00 - 18:00</span>
+                </li>
+            </ul>
         </div>
     </div>
 </div>

@@ -15,6 +15,11 @@ class Cart:
     def add(self, product, quantity=1, update_quantity=False):
         """Добавление товара в корзину или обновление его количества."""
         product_id = str(product.id)
+
+        if product.stock_quantity == 0:
+            # Товар отсутствует на складе, не добавляем в корзину
+            return False
+
         if product_id not in self.cart:
             self.cart[product_id] = {'quantity': 0,
                                      'price': str(product.get_display_price())}
@@ -41,8 +46,10 @@ class Cart:
         Перебираем товары в корзине и получаем товары из базы данных.
         """
         product_ids = self.cart.keys()
+        print(f"DEBUG: Product IDs from session: {product_ids}")
         # Получаем объекты Product и добавляем их в корзину
         products = Product.objects.filter(id__in=product_ids)
+        print(f"DEBUG: Products retrieved from DB: {products}")
 
         cart = self.cart.copy()
         for product in products:

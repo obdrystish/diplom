@@ -7,6 +7,7 @@ from django.conf import settings
 from cart.cart import Cart
 from .models import Order, OrderItem
 from .forms import OrderForm
+from django.http import JsonResponse
 
 @login_required
 def checkout(request):
@@ -39,7 +40,7 @@ def checkout(request):
         initial_data = {
             'full_name': f"{request.user.first_name} {request.user.last_name}",
             'email': request.user.email,
-            'phone': getattr(getattr(request.user, 'profile', None), 'phone', ''),
+            'phone': getattr(getattr(request.user, 'profile', None), 'phone', '') or '8',
             'address': getattr(getattr(request.user, 'profile', None), 'address', '')
         }
         form = OrderForm(initial=initial_data)
@@ -83,6 +84,39 @@ def order_detail(request, order_id):
     }
     
     return render(request, 'orders/order_detail.html', context)
+
+@login_required
+def order_details_json(request, order_id):
+    try:
+        order = get_object_or_404(Order, id=order_id, user=request.user)
+        items_data = []
+        for item in order.items.all():  # Предполагается, что related_name для OrderItem к Product - 'items'
+            items_data.append({
+                'product_name': item.product.name,
+                'quantity': item.quantity,
+                'price': str(item.price), # Преобразовать Decimal в str для JSON
+                'total_price': str(item.get_total_price()),
+            })
+
+        data = {
+            'id': order.id,
+            'created_at': order.created_at.strftime('%d.%m.%Y %H:%M'),
+            'status': order.status,
+            'status_display': order.get_status_display(),
+            'total_amount': str(order.total_amount),
+            'full_name': order.full_name,
+            'email': order.email,
+            'phone': order.phone,
+            'address': order.address,
+            'shipping_method': order.shipping_method,
+            'shipping_method_display': order.get_shipping_method_display(),
+            'payment_method': order.payment_method,
+            'payment_method_display': order.get_payment_method_display(),
+            'items': items_data,
+        }
+        return JsonResponse(data)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=400)
 
 def send_order_confirmation_email(order):
     subject = f'Подтверждение заказа #{order.id}'

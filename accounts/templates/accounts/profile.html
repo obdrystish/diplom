@@ -39,7 +39,7 @@
                                     <td>{{ order.id }}</td>
                                     <td>{{ order.created_at|date:"d.m.Y" }}</td>
                                     <td>{{ order.get_status_display }}</td>
-                                    <td>{{ order.total_price }} ₽</td>
+                                    <td>{{ order.total_amount }} ₽</td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
@@ -48,6 +48,9 @@
                         <p class="text-center">У вас пока нет заказов</p>
                     {% endif %}
                 </div>
+            </div>
+            <div class="mt-3 text-center">
+                <a href="{% url 'orders:order_history' %}" class="btn btn-primary">Мои заказы</a>
             </div>
         </div>
     </div>

@@ -1,140 +1,140 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Каталог продуктов - Sports Nutrition{% endblock %}
+{% block title %}Каталог товаров{% endblock %}
 
 {% block content %}
-<div class="container my-5">
+<div class="container mt-4">
+    <h1 class="mb-4">Каталог товаров</h1>
+
     <div class="row">
         <!-- Фильтры -->
         <div class="col-md-3">
-            <div class="card border-0 shadow-sm">
+            <div class="card mb-4">
                 <div class="card-body">
-                    <h5 class="card-title mb-4">Фильтры</h5>
-                    <form method="get">
+                    <h5 class="card-title">Фильтры</h5>
+                    <form method="get" id="filter-form">
+                        <!-- Категории -->
                         <div class="mb-3">
-                            <label class="form-label">Категория</label>
-                            <select name="category" class="form-select">
-                                <option value="">Все категории</option>
-                                <option value="protein" {% if request.GET.category == 'protein' %}selected{% endif %}>Протеин</option>
-                                <option value="amino" {% if request.GET.category == 'amino' %}selected{% endif %}>Аминокислоты</option>
-                                <option value="gainer" {% if request.GET.category == 'gainer' %}selected{% endif %}>Гейнер</option>
-                                <option value="creatine" {% if request.GET.category == 'creatine' %}selected{% endif %}>Креатин</option>
-                                <option value="vitamins" {% if request.GET.category == 'vitamins' %}selected{% endif %}>Витамины</option>
-                                <option value="supplements" {% if request.GET.category == 'supplements' %}selected{% endif %}>БАДы</option>
-                                <option value="other" {% if request.GET.category == 'other' %}selected{% endif %}>Прочее</option>
-                            </select>
+                            <label class="form-label">Категории</label>
+                            {% for category in categories %}
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="category" value="{{ category.id }}"
+                                    id="category{{ category.id }}" {% if category.id|stringformat:"i" in current_category %}checked{% endif %}>
+                                <label class="form-check-label" for="category{{ category.id }}">
+                                    {{ category.name }}
+                                </label>
+                            </div>
+                            {% endfor %}
                         </div>
+
+                        <!-- Бренды -->
+                        <div class="mb-3">
+                            <label class="form-label">Бренды</label>
+                            {% for brand in brands %}
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="brand" value="{{ brand.id }}"
+                                    id="brand{{ brand.id }}" {% if brand.id|stringformat:"i" in selected_brand_ids %}checked{% endif %}>
+                                <label class="form-check-label" for="brand{{ brand.id }}">
+                                    {{ brand.name }}
+                                </label>
+                            </div>
+                            {% endfor %}
+                        </div>
+
+                        <!-- Цена -->
                         <div class="mb-3">
                             <label class="form-label">Цена</label>
-                            <div class="input-group">
-                                <input type="number" name="min_price" class="form-control" placeholder="От" value="{{ request.GET.min_price }}">
-                                <input type="number" name="max_price" class="form-control" placeholder="До" value="{{ request.GET.max_price }}">
+                            <div class="row">
+                                <div class="col">
+                                    <input type="number" class="form-control" name="min_price" placeholder="От"
+                                        value="{{ request.GET.min_price }}">
+                                </div>
+                                <div class="col">
+                                    <input type="number" class="form-control" name="max_price" placeholder="До"
+                                        value="{{ request.GET.max_price }}">
+                                </div>
                             </div>
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label">Сортировка</label>
-                            <select name="sort" class="form-select">
-                                <option value="name" {% if request.GET.sort == 'name' %}selected{% endif %}>По названию</option>
-                                <option value="price" {% if request.GET.sort == 'price' %}selected{% endif %}>По цене (возр.)</option>
-                                <option value="-price" {% if request.GET.sort == '-price' %}selected{% endif %}>По цене (убыв.)</option>
-                            </select>
-                        </div>
+
                         <button type="submit" class="btn btn-primary w-100">Применить</button>
                     </form>
                 </div>
             </div>
         </div>
-        
-        <!-- Список продуктов -->
+
+        <!-- Товары -->
         <div class="col-md-9">
+            <!-- Сортировка и поиск -->
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2 class="mb-0">Каталог продуктов</h2>
-                <div class="btn-group">
-                    <button type="button" class="btn btn-outline-secondary active" id="gridView">
-                        <i class="fas fa-th"></i>
-                    </button>
-                    <button type="button" class="btn btn-outline-secondary" id="listView">
-                        <i class="fas fa-list"></i>
-                    </button>
-                </div>
+                <form method="get" class="d-flex gap-2">
+                    <input type="text" name="search" class="form-control" placeholder="Поиск..."
+                        value="{{ request.GET.search }}">
+                    <button type="submit" class="btn btn-primary">Поиск</button>
+                </form>
+                <select class="form-select" style="width: auto;" onchange="this.form.submit()" form="filter-form">
+                    <option value="">Сортировка</option>
+                    <option value="price" {% if request.GET.sort == 'price' %}selected{% endif %}>По цене (возр.)</option>
+                    <option value="-price" {% if request.GET.sort == '-price' %}selected{% endif %}>По цене (убыв.)</option>
+                    <option value="name" {% if request.GET.sort == 'name' %}selected{% endif %}>По названию</option>
+                </select>
             </div>
-            
-            <div class="row" id="productsGrid">
+
+            <!-- Список товаров -->
+            <div class="row row-cols-1 row-cols-md-3 g-4">
                 {% for product in products %}
-                <div class="col-md-4 mb-4">
-                    <div class="card h-100 product-card">
-                        <div class="card-img-top">
-                            {% if product.images.exists %}
-                                <img src="{{ product.images.first.image.url }}" alt="{{ product.name }}" class="img-fluid">
-                            {% else %}
-                                <img src="{% static 'images/product-placeholder.jpg' %}" alt="{{ product.name }}" class="img-fluid">
-                            {% endif %}
-                        </div>
-                        <div class="card-body">
+                <div class="col">
+                    <div class="card h-100">
+                        {% with product_main_image=product.images.first %}
+                        {% if product_main_image %}
+                        <img src="{{ product_main_image.image.url }}" class="card-img-top" alt="{{ product.name }}">
+                        {% else %}
+                        <img src="{% static 'images/no-image.png' %}" class="card-img-top" alt="No image">
+                        {% endif %}
+                        {% endwith %}
+                        <div class="card-body d-flex flex-column">
                             <h5 class="card-title">{{ product.name }}</h5>
-                            <p class="card-text">{{ product.description|truncatewords:20 }}</p>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div class="price">
-                                    {% if product.discount_price %}
-                                        <span class="text-muted text-decoration-line-through">{{ product.price }} ₽</span>
-                                        <span class="text-danger">{{ product.discount_price }} ₽</span>
-                                    {% else %}
-                                        <span>{{ product.price }} ₽</span>
-                                    {% endif %}
-                                </div>
-                                {% if user.is_authenticated %}
-                                    <form action="{% url 'cart:cart_add' product.id %}" method="post">
-                                        {% csrf_token %}
-                                        <input type="hidden" name="quantity" value="1">
-                                        <button type="submit" class="btn btn-primary">
-                                            <i class="fas fa-cart-plus"></i> В корзину
-                                        </button>
-                                    </form>
-                                {% else %}
-                                    <a href="{% url 'accounts:login' %}?next={{ request.path }}" class="btn btn-outline-primary">
-                                        <i class="fas fa-sign-in-alt"></i> Войти для покупки
-                                    </a>
-                                {% endif %}
-                            </div>
+                            <p class="card-text">{{ product.brand.name }}</p>
+                            <p class="card-text mt-auto">
+                                <strong>{{ product.price }} ₽</strong>
+                            </p>
+                            <a href="{% url 'products:product_detail' product.slug %}" class="btn btn-primary">Подробнее</a>
                         </div>
                     </div>
                 </div>
                 {% empty %}
                 <div class="col-12">
-                    <div class="alert alert-info">
-                        Товары не найдены
-                    </div>
+                    <p class="text-center">Товары не найдены</p>
                 </div>
                 {% endfor %}
             </div>
-            
+
             <!-- Пагинация -->
             {% if products.has_other_pages %}
-            <nav aria-label="Page navigation" class="mt-4">
+            <nav class="mt-4">
                 <ul class="pagination justify-content-center">
                     {% if products.has_previous %}
-                        <li class="page-item">
-                            <a class="page-link" href="?page={{ products.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Предыдущая</a>
-                        </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ products.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Предыдущая</a>
+                    </li>
                     {% endif %}
-                    
-                    {% for i in products.paginator.page_range %}
-                        {% if products.number == i %}
-                            <li class="page-item active">
-                                <span class="page-link">{{ i }}</span>
-                            </li>
-                        {% else %}
-                            <li class="page-item">
-                                <a class="page-link" href="?page={{ i }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ i }}</a>
-                            </li>
-                        {% endif %}
+
+                    {% for num in products.paginator.page_range %}
+                    {% if products.number == num %}
+                    <li class="page-item active">
+                        <span class="page-link">{{ num }}</span>
+                    </li>
+                    {% else %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ num }}</a>
+                    </li>
+                    {% endif %}
                     {% endfor %}
-                    
+
                     {% if products.has_next %}
-                        <li class="page-item">
-                            <a class="page-link" href="?page={{ products.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Следующая</a>
-                        </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ products.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Следующая</a>
+                    </li>
                     {% endif %}
                 </ul>
             </nav>
@@ -142,20 +142,4 @@
         </div>
     </div>
 </div>
-{% endblock %}
-
-{% block extra_js %}
-<script>
-    document.getElementById('gridView').addEventListener('click', function() {
-        document.getElementById('productsGrid').classList.remove('list-view');
-        this.classList.add('active');
-        document.getElementById('listView').classList.remove('active');
-    });
-    
-    document.getElementById('listView').addEventListener('click', function() {
-        document.getElementById('productsGrid').classList.add('list-view');
-        this.classList.add('active');
-        document.getElementById('gridView').classList.remove('active');
-    });
-</script>
 {% endblock %} 

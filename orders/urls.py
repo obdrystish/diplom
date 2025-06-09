@@ -9,4 +9,5 @@ urlpatterns = [
     path('history/', views.order_history, name='order_history'),
     path('detail/<int:order_id>/', views.order_detail, name='order_detail'),
     path('payment/<int:order_id>/', views.order_payment, name='order_payment'),
+    path('<int:order_id>/details/', views.order_details_json, name='order_details_json'),
 ] 
