@@ -23,10 +23,10 @@ source venv/bin/activate
 
 3. Установите зависимости:
 ```bash
-pip install Django>=4.2.0 mysqlclient>=2.1.0 Pillow>=9.0.0 python-dotenv>=0.19.0
+pip install -r requirements.txt
 ```
 
-4. Создайте файл `.env` в корневой директории:
+4. Создайте файл `.env` в корневой директории со следующими переменными:
 ```
 DB_NAME=your_db_name
 DB_USER=your_db_user
@@ -51,4 +51,4 @@ python manage.py runserver
 ## Требования
 - Python 3.8+
 - MySQL Server
-- pip (менеджер пакетов Python) 
+- pip (менеджер пакетов Python)
