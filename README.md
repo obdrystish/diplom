@@ -1,4 +1,4 @@
-# Sports Nutrition Shop
+# SmaevPit
 
 Интернет-магазин спортивного питания на Django.
 
