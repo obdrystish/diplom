@@ -6,7 +6,7 @@
 
 1. Клонируйте репозиторий:
 ```bash
-git clone https://github.com/your-username/sports-nutrition-shop.git
+git clone https://github.com/obdrystish/diplom.git
 cd sports-nutrition-shop
 ```
 
