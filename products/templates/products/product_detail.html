@@ -82,7 +82,7 @@
             {% endif %}
 
             <div class="mb-4">
-                <form action="{% url 'cart:add_to_cart' product.id %}" method="post" class="d-flex align-items-center">
+                <form action="{% url 'cart:add_to_cart' product.id %}" method="post" class="d-flex align-items-center" id="product-details-form">
                     {% csrf_token %}
                     <div class="input-group me-3" style="width: 150px;">
                         <button type="button" class="btn btn-outline-secondary" onclick="decrementQuantity()">-</button>
@@ -213,29 +213,67 @@
 document.addEventListener('DOMContentLoaded', function() {
     const quantityInput = document.getElementById('quantity');
     const maxQuantity = parseInt(quantityInput.getAttribute('max'));
-    
+    const addToCartForm = document.querySelector('#product-details-form');
+    const cartQuantityBadge = document.getElementById('cart-quantity-badge');
+
     function updateQuantity(value) {
         const newValue = parseInt(value);
         if (newValue >= 1 && newValue <= maxQuantity) {
             quantityInput.value = newValue;
         }
     }
-    
+
     window.incrementQuantity = function() {
         const currentValue = parseInt(quantityInput.value);
         if (currentValue < maxQuantity) {
             updateQuantity(currentValue + 1);
         }
     };
-    
+
     window.decrementQuantity = function() {
         const currentValue = parseInt(quantityInput.value);
         if (currentValue > 1) {
             updateQuantity(currentValue - 1);
         }
     };
-    
-    // Initialize tooltips
+
+    if (addToCartForm) {
+        addToCartForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const formData = new FormData(addToCartForm);
+
+            fetch(addToCartForm.action, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.cart_quantity !== undefined) {
+                    cartQuantityBadge.textContent = data.cart_quantity;
+                    const alertContainer = document.querySelector('.container.mt-3');
+                    if (alertContainer) {
+                        const alertDiv = document.createElement('div');
+                        alertDiv.className = 'alert alert-success alert-dismissible fade show';
+                        alertDiv.innerHTML = 'Товар добавлен в корзину!\n<button type="button" class="btn-close" data-bs-dismiss="alert"></button>';
+                        alertContainer.prepend(alertDiv);
+                        setTimeout(() => alertDiv.remove(), 3000);
+                    } else {
+                        alert('Товар успешно добавлен в корзину!');
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Ошибка:', error);
+                alert('Произошла ошибка при добавлении товара в корзину.');
+            });
+        });
+    }
+
     const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
     tooltipTriggerList.map(function (tooltipTriggerEl) {
         return new bootstrap.Tooltip(tooltipTriggerEl);

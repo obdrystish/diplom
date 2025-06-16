@@ -136,11 +136,14 @@
             </a>
             <div class="d-flex gap-2 w-100 mt-auto">
                 <a href="{% url 'products:product_detail' product.slug %}" class="btn btn-outline-primary btn-sm w-50">Подробнее</a>
-                <form action="{% url 'cart:cart_add' product.id %}" method="post" class="add-to-cart-form w-50">
+                <form action="{% url 'cart:cart_add' product.id %}" method="post" class="add-to-cart-category-form w-50" id="add-to-cart-form-{{ product.id }}">
                     {% csrf_token %}
                     <input type="hidden" name="quantity" value="1">
-                    <input type="hidden" name="update" value="False">
-                    <button type="submit" class="btn btn-primary btn-sm w-100" {% if product.stock_quantity == 0 %}disabled{% endif %}>В корзину</button>
+                    {% if product.stock_quantity == 0 %}
+                        <button type="submit" class="btn btn-secondary btn-sm" disabled>Нет в наличии</button>
+                    {% else %}
+                        <button type="submit" class="btn btn-primary btn-sm">В корзину</button>
+                    {% endif %}
                 </form>
             </div>
         </div>
@@ -152,4 +155,50 @@
     </div>
     {% endif %}
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const cartQuantityBadge = document.getElementById('cart-quantity-badge');
+    const addToCartForms = document.querySelectorAll('.add-to-cart-category-form');
+
+    addToCartForms.forEach(form => {
+        form.addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const formData = new FormData(form);
+
+            fetch(form.action, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.cart_quantity !== undefined) {
+                    cartQuantityBadge.textContent = data.cart_quantity;
+                    const alertContainer = document.querySelector('.container.mt-3');
+                    if (alertContainer) {
+                        const alertDiv = document.createElement('div');
+                        alertDiv.className = 'alert alert-success alert-dismissible fade show';
+                        alertDiv.innerHTML = 'Товар добавлен в корзину!\n<button type="button" class="btn-close" data-bs-dismiss="alert"></button>';
+                        alertContainer.prepend(alertDiv);
+                        setTimeout(() => alertDiv.remove(), 3000);
+                    } else {
+                        alert('Товар успешно добавлен в корзину!');
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Ошибка:', error);
+                alert('Произошла ошибка при добавлении товара в корзину.');
+            });
+        });
+    });
+});
+</script>
 {% endblock %} 

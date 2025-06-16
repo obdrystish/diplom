@@ -1,6 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.db.models import Q
 from .models import Product, Category, Brand, Review
+from orders.models import OrderItem
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from .forms import ReviewForm
@@ -24,23 +25,27 @@ def contact_us(request):
     # Здесь можно добавить логику для обработки контактной формы, если она будет
     return render(request, 'contact_us.html')
 
-def catalog(request):
+def product_list(request):
     products = Product.objects.all()
     categories = Category.objects.all()
     brands = Brand.objects.all()
-    
+    flavors = Product.objects.exclude(flavor__exact='').values_list('flavor', flat=True).distinct().order_by('flavor')
+
     # Filter by category
-    category_slug = request.GET.get('category')
-    if category_slug:
-        category = get_object_or_404(Category, slug=category_slug)
-        products = products.filter(category=category)
-    
+    selected_category_ids = request.GET.getlist('category')
+    if selected_category_ids:
+        products = products.filter(category__id__in=selected_category_ids)
+
     # Filter by brand
-    brand_slug = request.GET.get('brand')
-    if brand_slug:
-        brand = get_object_or_404(Brand, slug=brand_slug)
-        products = products.filter(brand=brand)
-    
+    selected_brand_slugs = request.GET.getlist('brand')
+    if selected_brand_slugs:
+        products = products.filter(brand__slug__in=selected_brand_slugs)
+
+    # Filter by flavor
+    selected_flavor_names = request.GET.getlist('flavor')
+    if selected_flavor_names:
+        products = products.filter(flavor__in=selected_flavor_names)
+
     # Filter by price range
     min_price = request.GET.get('min_price')
     max_price = request.GET.get('max_price')
@@ -48,7 +53,7 @@ def catalog(request):
         products = products.filter(price__gte=min_price)
     if max_price:
         products = products.filter(price__lte=max_price)
-    
+
     # Search by name
     search_query = request.GET.get('q')
     if search_query:
@@ -56,28 +61,18 @@ def catalog(request):
             Q(name__icontains=search_query) | 
             Q(description__icontains=search_query)
         )
-    
-    # Sort products
-    sort_by = request.GET.get('sort', 'created_at')
-    if sort_by == 'price_asc':
-        products = products.order_by('price')
-    elif sort_by == 'price_desc':
-        products = products.order_by('-price')
-    elif sort_by == 'popularity':
-        products = products.order_by('-popularity')
-    elif sort_by == 'newest':
-        products = products.order_by('-created_at')
-    
+
     context = {
         'products': products,
         'categories': categories,
         'brands': brands,
-        'current_category': category_slug,
-        'current_brand': brand_slug,
+        'flavors': flavors,
+        'current_category': selected_category_ids,
+        'current_brand': selected_brand_slugs,
+        'current_flavor': selected_flavor_names,
         'min_price': min_price,
         'max_price': max_price,
         'search_query': search_query,
-        'sort_by': sort_by
     }
     
     return render(request, 'products/catalog.html', context)
@@ -169,62 +164,6 @@ def add_review(request, product_id):
             return JsonResponse({'status': 'success'})
     
     return JsonResponse({'status': 'error'})
-
-def product_list(request):
-    products = Product.objects.all()
-    categories = Category.objects.all()
-    brands = Brand.objects.all()
-    
-    # Filter by category
-    selected_category_slugs = request.GET.getlist('category')
-    if selected_category_slugs:
-        products = products.filter(category__slug__in=selected_category_slugs)
-    
-    # Filter by brand
-    selected_brand_ids = request.GET.getlist('brand')
-    if selected_brand_ids:
-        products = products.filter(brand__id__in=selected_brand_ids)
-    
-    # Filter by price range
-    min_price = request.GET.get('min_price')
-    max_price = request.GET.get('max_price')
-    if min_price:
-        products = products.filter(price__gte=min_price)
-    if max_price:
-        products = products.filter(price__lte=max_price)
-    
-    # Search by name
-    search_query = request.GET.get('q')
-    if search_query:
-        products = products.filter(
-            Q(name__icontains=search_query) | 
-            Q(description__icontains=search_query)
-        )
-    
-    # Sort products
-    sort_by = request.GET.get('sort', 'created_at')
-    if sort_by == 'price_asc':
-        products = products.order_by('price')
-    elif sort_by == 'price_desc':
-        products = products.order_by('-price')
-    elif sort_by == 'popularity':
-        products = products.order_by('-popularity')
-    elif sort_by == 'newest':
-        products = products.order_by('-created_at')
-    
-    context = {
-        'products': products,
-        'categories': categories,
-        'brands': brands,
-        'current_category': selected_category_slugs,
-        'selected_brand_ids': selected_brand_ids,
-        'min_price': min_price,
-        'max_price': max_price,
-        'search_query': search_query,
-        'sort_by': sort_by
-    }
-    
-    return render(request, 'products/product_list.html', context)
 
 def category_list(request):
     categories = Category.objects.all()

@@ -28,6 +28,10 @@ def cart_add(request, product_id):
         added = cart.add(product=product,
                           quantity=cd['quantity'],
                           update_quantity=cd['update'])
+    
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        return JsonResponse({'cart_quantity': len(cart), 'total_price': str(cart.get_total_price())})
+    
     return redirect('products:product_detail', product.slug)
 
 @login_required

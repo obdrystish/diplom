@@ -2,14 +2,51 @@
 
 {% block title %}Главная - СмаевПит{% endblock %}
 
+{% block extra_css %}
+<style>
+    .card-body {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between; /* Распределяем пространство между элементами */
+        min-height: 220px; /* Установите минимальную высоту для card-body */
+    }
+    .card-title {
+        min-height: 48px; /* Установите фиксированную высоту для заголовка, чтобы он не прыгал */
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-line-clamp: 2; /* Ограничить заголовок до 2 строк */
+        -webkit-box-orient: vertical;
+    }
+    .card-text {
+        flex-grow: 1; /* Описание будет занимать все доступное пространство */
+        min-height: 40px; /* Минимальная высота для описания */
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-line-clamp: 2; /* Ограничить описание до 2 строк */
+        -webkit-box-orient: vertical;
+    }
+    .price-section { /* Добавляем новый класс для блока с ценой и кнопкой */
+        margin-top: auto; /* Прижимаем цену и кнопку к низу */
+        width: 100%;
+    }
+    .card-img-top {
+        object-fit: contain; /* Чтобы изображения не искажались */
+        height: 180px; /* Фиксированная высота для изображений */
+        padding: 10px; /* Отступ вокруг изображения */
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="container mt-5">
-    <div class="jumbotron bg-light p-5 rounded">
-        <h1 class="display-4">Добро пожаловать в СмаевПит</h1>
-        <p class="lead">Ваш надежный источник качественного спортивного питания</p>
-        <hr class="my-4">
-        <p>Широкий выбор протеинов, BCAA, креатина и других добавок для спортсменов</p>
-        <a class="btn btn-primary btn-lg" href="{% url 'products:product_list' %}" role="button">Перейти в каталог</a>
+<div class="container py-5">
+    <div class="row text-center mb-4">
+        <div class="col-12">
+            <h1 class="display-4 fw-bold">Широкий выбор протеинов, BCAA, креатина и других добавок для спортсменов</h1>
+            <p class="lead">Найдите идеальное спортивное питание для ваших целей.</p>
+            <a href="{% url 'products:product_list' %}" class="btn btn-primary btn-lg mt-3">Перейти в каталог</a>
+        </div>
     </div>
 
     <h2 class="mt-5 mb-4">Рекомендуемые товары</h2>
@@ -23,13 +60,13 @@
                     <div class="card-body d-flex flex-column">
                         <h5 class="card-title">{{ product.name }}</h5>
                         <p class="card-text">{{ product.description|truncatewords:20 }}</p>
-                        <div class="d-flex justify-content-between align-items-center mt-auto">
+                        <div class="d-flex justify-content-between align-items-center mt-auto price-section">
                             <div class="price">
                                 {% if product.discount_price %}
-                                    <span class="text-muted text-decoration-line-through">{{ product.price }} ₽</span>
-                                    <span class="text-danger">{{ product.discount_price }} ₽</span>
-                                {% else %}
-                                    <span>{{ product.price }} ₽</span>
+                                    <span class="text-muted text-decoration-line-through"><b>{{ product.price }} ₽</b></span>
+                                    <span class="text-danger"><b>{{ product.discount_price }} ₽</b></span>
+                                {% else %}	
+                                    <span><b>{{ product.price }} ₽</b></span>
                                 {% endif %}
                             </div>
                             <a href="{% url 'products:product_detail' product.slug %}" class="btn btn-primary">Подробнее</a>
@@ -44,11 +81,14 @@
     <div class="row">
         {% for category in categories %}
             <div class="col-md-4 mb-4">
-                <div class="card">
+                <div class="card h-100 text-center">
+                    {% if category.image %}
+                        <img src="{{ category.image.url }}" class="card-img-top" alt="{{ category.name }}">
+                    {% endif %}
                     <div class="card-body">
                         <h5 class="card-title">{{ category.name }}</h5>
-                        <p class="card-text">{{ category.description|truncatewords:20 }}</p>
-                        <a href="{% url 'products:category_detail' category.slug %}" class="btn btn-outline-primary">Перейти в категорию</a>
+                        <p class="card-text">{{ category.description|truncatewords:15 }}</p>
+                        <a href="{% url 'products:category_detail' category.slug %}" class="btn btn-secondary mt-auto">Смотреть товары</a>
                     </div>
                 </div>
             </div>

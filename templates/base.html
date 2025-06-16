@@ -37,7 +37,7 @@
                 <div class="d-flex">
                     <a href="{% url 'cart:cart_detail' %}" class="btn btn-outline-light me-2">
                         <i class="fas fa-shopping-cart"></i>
-                        <span class="badge bg-danger">{{ cart|length }}</span>
+                        <span id="cart-quantity-badge" class="badge bg-danger">{{ cart|length }}</span>
                     </a>
                     {% if user.is_authenticated %}
                         <div class="dropdown">
